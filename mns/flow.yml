@@ -1,0 +1,11 @@
+version: v1
+type: flow
+steps:
+  # Read mns topic trigger params
+  - type: pass
+    name: init
+    outputMappings:
+      - source: $input
+        target: payload
+      - source: $input.Message
+        target: message

@@ -1,0 +1,11 @@
+version: v1
+type: flow
+steps:
+  # Read oss trigger params
+  - type: pass
+    name: init
+    outputMappings:
+      - source: $input
+        target: payload
+      - source: $input.events[0].oss.object.key
+        target: objectKey

@@ -1,0 +1,42 @@
+ROSTemplateFormatVersion: '2015-09-01'
+Transform: 'Aliyun::Serverless-2018-04-03'
+
+Resources:
+  # FC service and functions
+  fnf-demo-trigger-service:
+    Type: 'Aliyun::Serverless::Service'
+    Properties:
+      Description: Demo service for serverless workflow event sources trigger
+      Policies:
+        - AliyunFCFullAccess
+        - AliyunFnFFullAccess
+        - AliyunLogFullAccess
+        - AliyunMNSFullAccess
+
+    # Entrance function triggered by event, then it will invoke fnf-demo-flow
+    MNSEntrancePy:
+      Type: 'Aliyun::Serverless::Function'
+      Properties:
+        Description: Function triggered by mns topic, then use workflow sdk to execute flow
+        Handler: entrance.handler
+        Runtime: python3
+        Timeout: 60
+        MemorySize: 256
+        CodeUri: ./entrance.py
+      Events:
+        mns-topic-trigger:
+          Type: MNSTopic
+          Properties:
+            TopicName: {PELACE_ME}
+            Region: {PELACE_ME}
+            NotifyContentFormat: JSON
+            NotifyStrategy: BACKOFF_RETRY
+
+  # serverless workflow demo
+  fnf-demo-mns-flow:
+    Type: 'Aliyun::Serverless::Flow'
+    Properties:
+      Description: Demo flow for serverless workflow event sources trigger
+      Policies:
+        - AliyunFCFullAccess
+      DefinitionUri: ../flow.yml

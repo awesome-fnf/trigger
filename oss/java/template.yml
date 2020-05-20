@@ -1,0 +1,43 @@
+ROSTemplateFormatVersion: '2015-09-01'
+Transform: 'Aliyun::Serverless-2018-04-03'
+
+Resources:
+  # FC service and functions
+  fnf-demo-trigger-service:
+    Type: 'Aliyun::Serverless::Service'
+    Properties:
+      Description: Demo service for serverless workflow event sources trigger
+      Policies:
+        - AliyunFCFullAccess
+        - AliyunFnFFullAccess
+        - AliyunOSSFullAccess
+        - AliyunLogFullAccess
+
+    # Entrance function triggered by event, then it will invoke fnf-demo-flow
+    OSSEntranceJava:
+      Type: 'Aliyun::Serverless::Function'
+      Properties:
+        Description: Function triggered by oss, then use workflow sdk to execute flow
+        Handler: com.aliyun.fc.example.Entrance::handleRequest
+        Runtime: java8
+        Timeout: 60
+        MemorySize: 256
+        CodeUri: ./target/oss-trigger-1.0.jar
+      Events:
+        # oss trigger
+        oss-trigger:
+          Type: OSS
+          Properties:
+            BucketName: {PELACE_ME}
+            Events:
+              - oss:ObjectCreated:PostObject
+              - oss:ObjectCreated:PutObject
+
+  # serverless workflow demo
+  fnf-demo-oss-flow:
+    Type: 'Aliyun::Serverless::Flow'
+    Properties:
+      Description: Demo flow for serverless workflow event sources trigger
+      Policies:
+        - AliyunFCFullAccess
+      DefinitionUri: ../flow.yml
